@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF5DC"/>
+      <stop offset="0.58" stop-color="#F7E0B7"/>
+      <stop offset="1" stop-color="#E7C78F"/>
+    </linearGradient>
+    <linearGradient id="board" x1="0" y1="0" x2="0" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7ECD5"/>
+      <stop offset="1" stop-color="#E8D3AC"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bg)"/>
+
+  <rect x="220" y="110" width="520" height="320" rx="28" fill="url(#board)" stroke="#684A2A" stroke-width="8"/>
+
+  <g stroke="#B79A70" stroke-opacity="0.45">
+    <path d="M272 110V430"/>
+    <path d="M324 110V430"/>
+    <path d="M376 110V430"/>
+    <path d="M428 110V430"/>
+    <path d="M480 110V430"/>
+    <path d="M532 110V430"/>
+    <path d="M584 110V430"/>
+    <path d="M636 110V430"/>
+    <path d="M688 110V430"/>
+    <path d="M220 162H740"/>
+    <path d="M220 214H740"/>
+    <path d="M220 266H740"/>
+    <path d="M220 318H740"/>
+    <path d="M220 370H740"/>
+  </g>
+
+  <g fill="#49A86B">
+    <rect x="324" y="266" width="50" height="50" rx="12"/>
+    <rect x="376" y="266" width="50" height="50" rx="12"/>
+    <rect x="428" y="266" width="50" height="50" rx="12"/>
+    <rect x="480" y="266" width="50" height="50" rx="12"/>
+    <rect x="532" y="266" width="50" height="50" rx="12"/>
+  </g>
+  <g>
+    <rect x="584" y="266" width="50" height="50" rx="14" fill="#2F7F4F"/>
+    <circle cx="602" cy="284" r="4" fill="#10210F"/>
+    <circle cx="618" cy="284" r="4" fill="#10210F"/>
+  </g>
+
+  <g>
+    <circle cx="480" cy="214" r="18" fill="#C63F27"/>
+    <circle cx="474" cy="208" r="6" fill="rgba(255,255,255,0.6)"/>
+  </g>
+
+  <rect x="42" y="38" width="290" height="64" rx="18" fill="rgba(255,255,255,0.72)"/>
+  <text x="66" y="79" fill="#6A411E" font-size="40" font-family="Noto Sans TC, Microsoft JhengHei, sans-serif" font-weight="800">貪食蛇</text>
+</svg>
