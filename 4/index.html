@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工程計算機</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg-1: #f5f7fb;
+      --bg-2: #dce9ff;
+      --ink: #0d1b2a;
+      --muted: #4f6276;
+      --card: rgba(255, 255, 255, 0.88);
+      --line: rgba(20, 48, 87, 0.14);
+      --accent: #ff5a36;
+      --accent-2: #1675ff;
+      --ok: #0f8b6f;
+      --warn: #b74832;
+      --shadow: 0 20px 45px rgba(14, 34, 58, 0.12);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 12%, #ffffff 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 88% 16%, #c2d9ff 0%, rgba(194, 217, 255, 0) 40%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(24px);
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    body::before {
+      width: 340px;
+      height: 340px;
+      background: #8bc7ff;
+      top: -110px;
+      right: -80px;
+      animation: floatA 10s ease-in-out infinite;
+    }
+
+    body::after {
+      width: 300px;
+      height: 300px;
+      background: #ffc3a5;
+      bottom: -90px;
+      left: -70px;
+      animation: floatB 11s ease-in-out infinite;
+    }
+
+    .container {
+      width: min(1080px, 92vw);
+      margin: 36px auto 50px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, rgba(13, 27, 42, 0.94), rgba(18, 52, 94, 0.88));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      color: #f5f9ff;
+      padding: 26px 28px;
+      animation: reveal 0.8s ease forwards;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      max-width: 720px;
+      color: #d4e3f8;
+    }
+
+    .grid {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(5px);
+      transform: translateY(18px);
+      opacity: 0;
+      animation: reveal 0.7s ease forwards;
+    }
+
+    .card:nth-child(2) { animation-delay: 0.05s; }
+    .card:nth-child(3) { animation-delay: 0.1s; }
+    .card:nth-child(4) { animation-delay: 0.15s; }
+    .card:nth-child(5) { animation-delay: 0.2s; }
+    .card:nth-child(6) { animation-delay: 0.25s; }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+      color: #0f2d4f;
+    }
+
+    .hint {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .row.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    label {
+      display: block;
+      font-size: 0.83rem;
+      color: #2f4a66;
+      margin-bottom: 5px;
+      letter-spacing: 0.02em;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border: 1px solid #c7d4e6;
+      border-radius: 12px;
+      padding: 10px 11px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: #fff;
+      color: #0d1b2a;
+    }
+
+    input:focus,
+    select:focus,
+    button:focus {
+      outline: 2px solid rgba(22, 117, 255, 0.25);
+      outline-offset: 1px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      color: #fff;
+      background: linear-gradient(90deg, var(--accent), #ff8a4a);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button.secondary {
+      background: linear-gradient(90deg, #1d69d8, #21a2ff);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(255, 90, 54, 0.26);
+    }
+
+    .result {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px dashed #b9c8dc;
+      background: #f8fbff;
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 44px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .result.ok {
+      border-color: rgba(15, 139, 111, 0.35);
+      color: var(--ok);
+    }
+
+    .result.warn {
+      border-color: rgba(183, 72, 50, 0.35);
+      color: var(--warn);
+    }
+
+    .calc-shell {
+      border: 1px solid #c6d4e8;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fdfefe, #eef4ff);
+      padding: 10px;
+    }
+
+    .calc-display {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid #c6d5eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      background: #ffffff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .sci-top {
+      display: grid;
+      grid-template-columns: 1fr 130px;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .sci-top select {
+      margin: 0;
+    }
+
+    .sci-keypad {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .key {
+      border-radius: 10px;
+      border: 1px solid #c2d2e8;
+      background: #fff;
+      color: #163452;
+      font-weight: 600;
+      padding: 11px 0;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .key:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 7px 14px rgba(25, 56, 94, 0.16);
+    }
+
+    .key.op {
+      background: #eaf2ff;
+      color: #134786;
+    }
+
+    .key.danger {
+      background: #ffe9e4;
+      color: #a2402d;
+    }
+
+    .key.equal {
+      border: none;
+      background: linear-gradient(90deg, #1d69d8, #21a2ff);
+      color: #fff;
+    }
+
+    .key.span2 {
+      grid-column: span 2;
+    }
+
+    .key.fn {
+      background: #eef7ea;
+      color: #1c5b2f;
+    }
+
+    .footer {
+      margin-top: 16px;
+      color: #36506a;
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
+    @keyframes reveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-16px, 14px); }
+    }
+
+    @keyframes floatB {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(16px, -14px); }
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .container {
+        margin-top: 22px;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .row.two {
+        grid-template-columns: 1fr;
+      }
+
+      .sci-top {
+        grid-template-columns: 1fr;
+      }
+
+      .sci-keypad {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>工程計算機</h1>
+      <p>常用電學與工程換算集中在同一頁，輸入已知值即可快速得到結果。單位預設為 V、A、Ω、W、F、Hz。</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>歐姆定律</h2>
+        <p class="hint">在 V、I、R 中留一欄空白，系統會自動推算該值。</p>
+        <div class="row">
+          <div>
+            <label for="ohm-v">電壓 V</label>
+            <input id="ohm-v" type="number" step="any" placeholder="例如 12">
+          </div>
+          <div>
+            <label for="ohm-i">電流 I</label>
+            <input id="ohm-i" type="number" step="any" placeholder="例如 2">
+          </div>
+          <div>
+            <label for="ohm-r">電阻 R</label>
+            <input id="ohm-r" type="number" step="any" placeholder="例如 6">
+          </div>
+        </div>
+        <div class="row two">
+          <button id="ohm-calc">計算</button>
+          <button class="secondary" id="ohm-clear" type="button">清除</button>
+        </div>
+        <div id="ohm-result" class="result">等待輸入...</div>
+      </article>
+
+      <article class="card">
+        <h2>功率計算</h2>
+        <p class="hint">輸入任意兩個值，計算 P、V、I、R 的可推導組合。</p>
+        <div class="row">
+          <div>
+            <label for="p-v">電壓 V</label>
+            <input id="p-v" type="number" step="any" placeholder="例如 24">
+          </div>
+          <div>
+            <label for="p-i">電流 I</label>
+            <input id="p-i" type="number" step="any" placeholder="例如 1.5">
+          </div>
+          <div>
+            <label for="p-r">電阻 R</label>
+            <input id="p-r" type="number" step="any" placeholder="例如 16">
+          </div>
+        </div>
+        <button id="power-calc">計算功率與關聯值</button>
+        <div id="power-result" class="result">等待輸入...</div>
+      </article>
+
+      <article class="card">
+        <h2>RC 時間常數</h2>
+        <p class="hint">輸入 R 與 C，計算時間常數 τ 與截止頻率 fc。</p>
+        <div class="row two">
+          <div>
+            <label for="rc-r">電阻 R (Ω)</label>
+            <input id="rc-r" type="number" step="any" placeholder="例如 1000">
+          </div>
+          <div>
+            <label for="rc-c">電容 C (F)</label>
+            <input id="rc-c" type="number" step="any" placeholder="例如 0.000001">
+          </div>
+        </div>
+        <button id="rc-calc">計算 τ 與 fc</button>
+        <div id="rc-result" class="result">等待輸入...</div>
+      </article>
+
+      <article class="card">
+        <h2>單位換算</h2>
+        <p class="hint">支援長度與溫度快速換算。</p>
+        <div class="row two">
+          <div>
+            <label for="conv-value">數值</label>
+            <input id="conv-value" type="number" step="any" placeholder="例如 25">
+          </div>
+          <div>
+            <label for="conv-type">類型</label>
+            <select id="conv-type">
+              <option value="mm-in">毫米 → 英吋</option>
+              <option value="in-mm">英吋 → 毫米</option>
+              <option value="m-ft">公尺 → 英尺</option>
+              <option value="ft-m">英尺 → 公尺</option>
+              <option value="c-f">攝氏 → 華氏</option>
+              <option value="f-c">華氏 → 攝氏</option>
+            </select>
+          </div>
+        </div>
+        <button id="conv-calc" class="secondary">執行換算</button>
+        <div id="conv-result" class="result">等待輸入...</div>
+      </article>
+
+      <article class="card">
+        <h2>一般計算機</h2>
+        <p class="hint">可用於一般四則運算，支援括號與小數點。</p>
+        <div class="calc-shell">
+          <div id="basic-display" class="calc-display">0</div>
+          <div class="keypad" id="basic-keypad">
+            <button class="key danger" data-action="clear" type="button">AC</button>
+            <button class="key danger" data-action="delete" type="button">DEL</button>
+            <button class="key op" data-value="(" type="button">(</button>
+            <button class="key op" data-value=")" type="button">)</button>
+
+            <button class="key" data-value="7" type="button">7</button>
+            <button class="key" data-value="8" type="button">8</button>
+            <button class="key" data-value="9" type="button">9</button>
+            <button class="key op" data-value="/" type="button">÷</button>
+
+            <button class="key" data-value="4" type="button">4</button>
+            <button class="key" data-value="5" type="button">5</button>
+            <button class="key" data-value="6" type="button">6</button>
+            <button class="key op" data-value="*" type="button">×</button>
+
+            <button class="key" data-value="1" type="button">1</button>
+            <button class="key" data-value="2" type="button">2</button>
+            <button class="key" data-value="3" type="button">3</button>
+            <button class="key op" data-value="-" type="button">−</button>
+
+            <button class="key span2" data-value="0" type="button">0</button>
+            <button class="key" data-value="." type="button">.</button>
+            <button class="key op" data-value="+" type="button">+</button>
+
+            <button class="key equal span2" data-action="equals" type="button">=</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>函數計算機</h2>
+        <p class="hint">支援 sin、cos、tan、log、ln、sqrt、冪次與反三角函數。</p>
+        <div class="calc-shell">
+          <div class="sci-top">
+            <div id="sci-display" class="calc-display">0</div>
+            <select id="sci-angle" aria-label="角度模式">
+              <option value="deg">DEG 模式</option>
+              <option value="rad">RAD 模式</option>
+            </select>
+          </div>
+          <div class="sci-keypad" id="sci-keypad">
+            <button class="key danger" data-action="clear" type="button">AC</button>
+            <button class="key danger" data-action="delete" type="button">DEL</button>
+            <button class="key op" data-value="(" type="button">(</button>
+            <button class="key op" data-value=")" type="button">)</button>
+            <button class="key equal" data-action="equals" type="button">=</button>
+
+            <button class="key fn" data-value="sin(" type="button">sin</button>
+            <button class="key fn" data-value="cos(" type="button">cos</button>
+            <button class="key fn" data-value="tan(" type="button">tan</button>
+            <button class="key fn" data-value="log(" type="button">log</button>
+            <button class="key fn" data-value="ln(" type="button">ln</button>
+
+            <button class="key fn" data-value="asin(" type="button">asin</button>
+            <button class="key fn" data-value="acos(" type="button">acos</button>
+            <button class="key fn" data-value="atan(" type="button">atan</button>
+            <button class="key fn" data-value="sqrt(" type="button">sqrt</button>
+            <button class="key fn" data-value="abs(" type="button">abs</button>
+
+            <button class="key" data-value="7" type="button">7</button>
+            <button class="key" data-value="8" type="button">8</button>
+            <button class="key" data-value="9" type="button">9</button>
+            <button class="key op" data-value="/" type="button">÷</button>
+            <button class="key op" data-value="^" type="button">x^y</button>
+
+            <button class="key" data-value="4" type="button">4</button>
+            <button class="key" data-value="5" type="button">5</button>
+            <button class="key" data-value="6" type="button">6</button>
+            <button class="key op" data-value="*" type="button">×</button>
+            <button class="key fn" data-value="pi" type="button">pi</button>
+
+            <button class="key" data-value="1" type="button">1</button>
+            <button class="key" data-value="2" type="button">2</button>
+            <button class="key" data-value="3" type="button">3</button>
+            <button class="key op" data-value="-" type="button">−</button>
+            <button class="key fn" data-value="e" type="button">e</button>
+
+            <button class="key span2" data-value="0" type="button">0</button>
+            <button class="key" data-value="." type="button">.</button>
+            <button class="key op span2" data-value="+" type="button">+</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <p class="footer">提示：所有結果都已四捨五入至適合閱讀的位數。</p>
+  </main>
+
+  <script>
+    const PI = Math.PI;
+
+    const fmt = (value, digits = 6) => {
+      if (!Number.isFinite(value)) return '無法計算';
+      if (Math.abs(value) >= 1e6 || (Math.abs(value) > 0 && Math.abs(value) < 1e-4)) {
+        return value.toExponential(4);
+      }
+      return Number(value.toFixed(digits)).toString();
+    };
+
+    const toNum = (id) => {
+      const text = document.getElementById(id).value.trim();
+      return text === '' ? null : Number(text);
+    };
+
+    const setResult = (id, message, ok = true) => {
+      const box = document.getElementById(id);
+      box.textContent = message;
+      box.classList.remove('ok', 'warn');
+      box.classList.add(ok ? 'ok' : 'warn');
+    };
+
+    document.getElementById('ohm-calc').addEventListener('click', () => {
+      const v = toNum('ohm-v');
+      const i = toNum('ohm-i');
+      const r = toNum('ohm-r');
+      const filled = [v, i, r].filter((n) => n !== null).length;
+
+      if (filled !== 2) {
+        setResult('ohm-result', '請剛好填入兩個值，並保留一個空白。', false);
+        return;
+      }
+
+      if (v === null) {
+        setResult('ohm-result', `V = I * R = ${fmt(i * r)} V`);
+      } else if (i === null) {
+        if (r === 0) {
+          setResult('ohm-result', '電阻 R 不可為 0。', false);
+          return;
+        }
+        setResult('ohm-result', `I = V / R = ${fmt(v / r)} A`);
+      } else {
+        if (i === 0) {
+          setResult('ohm-result', '電流 I 不可為 0。', false);
+          return;
+        }
+        setResult('ohm-result', `R = V / I = ${fmt(v / i)} Ω`);
+      }
+    });
+
+    document.getElementById('ohm-clear').addEventListener('click', () => {
+      ['ohm-v', 'ohm-i', 'ohm-r'].forEach((id) => {
+        document.getElementById(id).value = '';
+      });
+      const box = document.getElementById('ohm-result');
+      box.textContent = '等待輸入...';
+      box.classList.remove('ok', 'warn');
+    });
+
+    document.getElementById('power-calc').addEventListener('click', () => {
+      let v = toNum('p-v');
+      let i = toNum('p-i');
+      let r = toNum('p-r');
+
+      const valid = [v, i, r].filter((n) => n !== null).length;
+      if (valid < 2) {
+        setResult('power-result', '至少輸入兩個值（V、I、R 任兩項）。', false);
+        return;
+      }
+
+      if (v !== null && i !== null) {
+        r = i === 0 ? null : v / i;
+      } else if (v !== null && r !== null) {
+        i = r === 0 ? null : v / r;
+      } else if (i !== null && r !== null) {
+        v = i * r;
+      }
+
+      if (v === null || i === null || r === null) {
+        setResult('power-result', '輸入導致除以 0，請檢查數值。', false);
+        return;
+      }
+
+      const p = v * i;
+      const msg = [
+        `P = ${fmt(p)} W`,
+        `V = ${fmt(v)} V`,
+        `I = ${fmt(i)} A`,
+        `R = ${fmt(r)} Ω`
+      ].join('\n');
+
+      setResult('power-result', msg);
+    });
+
+    document.getElementById('rc-calc').addEventListener('click', () => {
+      const r = toNum('rc-r');
+      const c = toNum('rc-c');
+
+      if (r === null || c === null) {
+        setResult('rc-result', '請填入 R 與 C。', false);
+        return;
+      }
+
+      if (r <= 0 || c <= 0) {
+        setResult('rc-result', 'R 與 C 需大於 0。', false);
+        return;
+      }
+
+      const tau = r * c;
+      const fc = 1 / (2 * PI * tau);
+      const msg = [
+        `τ = R * C = ${fmt(tau)} s`,
+        `fc = 1 / (2πRC) = ${fmt(fc)} Hz`
+      ].join('\n');
+
+      setResult('rc-result', msg);
+    });
+
+    document.getElementById('conv-calc').addEventListener('click', () => {
+      const v = toNum('conv-value');
+      const type = document.getElementById('conv-type').value;
+
+      if (v === null) {
+        setResult('conv-result', '請輸入要換算的數值。', false);
+        return;
+      }
+
+      let out;
+      switch (type) {
+        case 'mm-in':
+          out = `${fmt(v / 25.4)} in`;
+          break;
+        case 'in-mm':
+          out = `${fmt(v * 25.4)} mm`;
+          break;
+        case 'm-ft':
+          out = `${fmt(v * 3.280839895)} ft`;
+          break;
+        case 'ft-m':
+          out = `${fmt(v / 3.280839895)} m`;
+          break;
+        case 'c-f':
+          out = `${fmt((v * 9) / 5 + 32)} °F`;
+          break;
+        case 'f-c':
+          out = `${fmt(((v - 32) * 5) / 9)} °C`;
+          break;
+        default:
+          out = '不支援的換算類型';
+      }
+
+      setResult('conv-result', out, out !== '不支援的換算類型');
+    });
+
+    const display = document.getElementById('basic-display');
+    const keypad = document.getElementById('basic-keypad');
+    let expr = '0';
+
+    const renderExpr = () => {
+      display.textContent = expr;
+    };
+
+    const appendToken = (token) => {
+      if (expr === '0' && /[0-9.]/.test(token)) {
+        expr = token === '.' ? '0.' : token;
+      } else {
+        expr += token;
+      }
+      renderExpr();
+    };
+
+    const safeEval = (raw) => {
+      if (!/^[0-9+\-*/().\s]+$/.test(raw)) {
+        throw new Error('invalid');
+      }
+      return Function('"use strict"; return (' + raw + ')')();
+    };
+
+    keypad.addEventListener('click', (event) => {
+      const target = event.target.closest('button');
+      if (!target) return;
+
+      const action = target.dataset.action;
+      const value = target.dataset.value;
+
+      if (action === 'clear') {
+        expr = '0';
+        renderExpr();
+        return;
+      }
+
+      if (action === 'delete') {
+        expr = expr.length > 1 ? expr.slice(0, -1) : '0';
+        renderExpr();
+        return;
+      }
+
+      if (action === 'equals') {
+        try {
+          const result = safeEval(expr);
+          expr = Number.isFinite(result) ? fmt(result, 10) : '錯誤';
+        } catch {
+          expr = '錯誤';
+        }
+        renderExpr();
+        return;
+      }
+
+      if (!value) return;
+      if (expr === '錯誤') {
+        expr = '0';
+      }
+      appendToken(value);
+    });
+
+    const sciDisplay = document.getElementById('sci-display');
+    const sciKeypad = document.getElementById('sci-keypad');
+    const sciAngle = document.getElementById('sci-angle');
+    let sciExpr = '0';
+
+    const renderSciExpr = () => {
+      sciDisplay.textContent = sciExpr;
+    };
+
+    const appendSciToken = (token) => {
+      if (sciExpr === '0' && /^[0-9.]$/.test(token)) {
+        sciExpr = token === '.' ? '0.' : token;
+      } else if (sciExpr === '0') {
+        sciExpr = token;
+      } else {
+        sciExpr += token;
+      }
+      renderSciExpr();
+    };
+
+    const degToRad = (value) => (value * PI) / 180;
+    const radToDeg = (value) => (value * 180) / PI;
+
+    const evalScientific = (raw, mode) => {
+      if (!/^[0-9+\-*/().\s,^a-zA-Z]+$/.test(raw)) {
+        throw new Error('invalid');
+      }
+
+      const tokens = raw.match(/[A-Za-z_]+/g) || [];
+      const allowed = new Set(['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'log', 'ln', 'abs', 'pi', 'e']);
+      if (tokens.some((token) => !allowed.has(token))) {
+        throw new Error('token');
+      }
+
+      let exprText = raw.replace(/\^/g, '**');
+      exprText = exprText.replace(/\bpi\b/g, `(${PI})`);
+      exprText = exprText.replace(/\be\b/g, `(${Math.E})`);
+
+      const sin = (x) => Math.sin(mode === 'deg' ? degToRad(x) : x);
+      const cos = (x) => Math.cos(mode === 'deg' ? degToRad(x) : x);
+      const tan = (x) => Math.tan(mode === 'deg' ? degToRad(x) : x);
+      const asin = (x) => {
+        const out = Math.asin(x);
+        return mode === 'deg' ? radToDeg(out) : out;
+      };
+      const acos = (x) => {
+        const out = Math.acos(x);
+        return mode === 'deg' ? radToDeg(out) : out;
+      };
+      const atan = (x) => {
+        const out = Math.atan(x);
+        return mode === 'deg' ? radToDeg(out) : out;
+      };
+      const sqrt = (x) => Math.sqrt(x);
+      const log = (x) => Math.log10(x);
+      const ln = (x) => Math.log(x);
+      const abs = (x) => Math.abs(x);
+
+      return Function(
+        'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'log', 'ln', 'abs',
+        '"use strict"; return (' + exprText + ')'
+      )(sin, cos, tan, asin, acos, atan, sqrt, log, ln, abs);
+    };
+
+    sciKeypad.addEventListener('click', (event) => {
+      const target = event.target.closest('button');
+      if (!target) return;
+
+      const action = target.dataset.action;
+      const value = target.dataset.value;
+
+      if (action === 'clear') {
+        sciExpr = '0';
+        renderSciExpr();
+        return;
+      }
+
+      if (action === 'delete') {
+        sciExpr = sciExpr.length > 1 ? sciExpr.slice(0, -1) : '0';
+        renderSciExpr();
+        return;
+      }
+
+      if (action === 'equals') {
+        try {
+          const result = evalScientific(sciExpr, sciAngle.value);
+          sciExpr = Number.isFinite(result) ? fmt(result, 10) : '錯誤';
+        } catch {
+          sciExpr = '錯誤';
+        }
+        renderSciExpr();
+        return;
+      }
+
+      if (!value) return;
+      if (sciExpr === '錯誤') {
+        sciExpr = '0';
+      }
+      appendSciToken(value);
+    });
+  </script>
+</body>
+</html>
