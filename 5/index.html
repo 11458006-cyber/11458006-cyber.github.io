@@ -600,14 +600,7 @@
             <h2>聯絡人</h2>
           </div>
           <div class="contacts">
-            <article class="contact active">
-              <div class="pic">LM</div>
-              <div>
-                <h3>內容助手</h3>
-                <p>在線中，適合產生草稿與快速回應。</p>
-              </div>
-              <div class="status-dot" aria-label="在線"></div>
-            </article>
+            <!-- 機器人聯絡人已移除 -->
             <article class="contact">
               <div class="pic">UX</div>
               <div>
@@ -893,10 +886,6 @@
       if (ntfyEnabled.checked) {
         publishToNtfy('聊天對話窗新訊息', `${userName}：${text}`);
       }
-
-      window.setTimeout(() => {
-        appendMessage('已收到，我可以繼續幫你整理成更清楚的對話樣式。', 'bot');
-      }, 450);
     });
 
     input.addEventListener('keydown', (event) => {
