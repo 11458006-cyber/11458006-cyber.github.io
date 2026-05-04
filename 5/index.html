@@ -545,7 +545,7 @@
           <div class="stats">
             <div class="stat">
               <span>在線狀態</span>
-              <strong>即時</strong>
+              <strong id="connectionState">未連線</strong>
             </div>
             <div class="stat">
               <span>訊息數</span>
@@ -557,7 +557,7 @@
             </div>
             <div class="stat">
               <span>模式</span>
-              <strong>Demo</strong>
+              <strong>聊天</strong>
             </div>
           </div>
         </div>
@@ -588,7 +588,8 @@
               送出訊息時同步推播到 ntfy.sh
             </label>
             <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-              <button id="ntfyTestBtn" class="ghost-btn" type="button">測試推播</button>
+              <button id="ntfyConnectBtn" class="ghost-btn" type="button">連線</button>
+              <button id="ntfyTestBtn" class="ghost-btn" type="button">送出通知</button>
               <span id="ntfyStatus" style="font-size:0.84rem; color:var(--muted);">尚未設定 topic</span>
             </div>
           </div>
@@ -600,9 +601,9 @@
           </div>
           <div class="contacts">
             <article class="contact active">
-              <div class="pic">AI</div>
+              <div class="pic">LM</div>
               <div>
-                <h3>設計助理</h3>
+                <h3>內容助手</h3>
                 <p>在線中，適合產生草稿與快速回應。</p>
               </div>
               <div class="status-dot" aria-label="在線"></div>
@@ -624,8 +625,8 @@
           <div class="chat-person">
             <div class="pic">S</div>
             <div>
-              <h2>Sam 介面測試</h2>
-              <small>今天 14:28 · 128 位元安全連線</small>
+              <h2>Sam 聊天視窗</h2>
+              <small>即時連線 · 128 位元安全連線</small>
             </div>
           </div>
           <div class="header-actions">
@@ -637,39 +638,10 @@
 
         <div class="messages" id="messages" aria-live="polite" aria-label="對話紀錄">
           <div class="day-divider">今天</div>
-
           <div class="bubble-row">
             <div class="bubble bot">
-              這是一個聊天對話窗的示範頁面。你可以直接在下方輸入訊息，或點選左側的快速指令。
-              <div class="bubble-meta">系統 · 14:20</div>
-            </div>
-          </div>
-
-          <div class="bubble-row me">
-            <div class="bubble me">
-              我想要一個簡潔又有設計感的聊天介面。
-              <div class="bubble-meta">你 · 14:21</div>
-            </div>
-          </div>
-
-          <div class="bubble-row">
-            <div class="bubble bot">
-              我會把版面做成雙欄式，左側放資訊與快捷操作，右側放主要對話區，手機上則會自動改為單欄。
-              <div class="bubble-meta">設計助理 · 14:22</div>
-            </div>
-          </div>
-
-          <div class="bubble-row me">
-            <div class="bubble me">
-              也希望能有輸入框、發送按鈕，還有幾個建議回覆。
-              <div class="bubble-meta">你 · 14:23</div>
-            </div>
-          </div>
-
-          <div class="bubble-row">
-            <div class="bubble bot">
-              已完成。這個版本包含訊息泡泡、狀態欄、側邊面板與可互動輸入列。
-              <div class="bubble-meta">設計助理 · 14:24</div>
+              尚無訊息，請輸入內容並送出，或等待 drher 頻道的新訊息。
+              <div class="bubble-meta">系統 · 現在</div>
             </div>
           </div>
         </div>
@@ -697,14 +669,18 @@
     const composer = document.getElementById('composer');
     const input = document.getElementById('messageInput');
     const messageCount = document.getElementById('messageCount');
+    const connectionState = document.getElementById('connectionState');
     const ntfyTopic = document.getElementById('ntfyTopic');
     const ntfyEnabled = document.getElementById('ntfyEnabled');
+    const ntfyConnectBtn = document.getElementById('ntfyConnectBtn');
     const ntfyTestBtn = document.getElementById('ntfyTestBtn');
     const ntfyStatus = document.getElementById('ntfyStatus');
     const userName = '劉米';
 
     const ntfyStorageKey = 'chat-ntfy-topic';
     const defaultTopic = 'drher';
+    const pendingEchoBodies = new Map();
+    let ntfySource = null;
 
     ntfyTopic.value = defaultTopic;
     window.localStorage.setItem(ntfyStorageKey, defaultTopic);
@@ -727,8 +703,128 @@
       ntfyStatus.textContent = message;
     }
 
+    function updateConnectionState(message) {
+      connectionState.textContent = message;
+    }
+
     function getNtfyTopic() {
       return ntfyTopic.value.trim();
+    }
+
+    function formatIncomingTime(timestamp) {
+      if (!timestamp) {
+        return formatTime();
+      }
+
+      return new Date(timestamp * 1000).toLocaleTimeString('zh-Hant', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function markEcho(body) {
+      pendingEchoBodies.set(body, Date.now() + 12000);
+    }
+
+    function shouldIgnoreEcho(body) {
+      const now = Date.now();
+
+      for (const [value, expiresAt] of pendingEchoBodies.entries()) {
+        if (expiresAt <= now) {
+          pendingEchoBodies.delete(value);
+        }
+      }
+
+      if (!pendingEchoBodies.has(body)) {
+        return false;
+      }
+
+      pendingEchoBodies.delete(body);
+      return true;
+    }
+
+    function appendRemoteMessage(text, sender, timestamp) {
+      const row = document.createElement('div');
+      row.className = 'bubble-row';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble bot';
+
+      const body = document.createElement('div');
+      body.textContent = text;
+
+      const meta = document.createElement('div');
+      meta.className = 'bubble-meta';
+      meta.textContent = `${sender} · ${formatIncomingTime(timestamp)}`;
+
+      bubble.append(body, meta);
+      row.appendChild(bubble);
+      messages.appendChild(row);
+      updateCount();
+      scrollToBottom();
+    }
+
+    function closeNtfyConnection() {
+      if (ntfySource) {
+        ntfySource.close();
+        ntfySource = null;
+      }
+    }
+
+    function connectNtfy() {
+      const topic = getNtfyTopic();
+
+      closeNtfyConnection();
+
+      if (!topic) {
+        updateConnectionState('未連線');
+        updateNtfyStatus('請先輸入 topic');
+        return;
+      }
+
+      if (!window.EventSource) {
+        updateConnectionState('不支援');
+        updateNtfyStatus('這個瀏覽器不支援 EventSource');
+        return;
+      }
+
+      updateConnectionState('連線中');
+      updateNtfyStatus(`正在連線到 ${topic}...`);
+
+      ntfySource = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse`);
+
+      ntfySource.addEventListener('open', () => {
+        updateConnectionState('已連線');
+        updateNtfyStatus(`已連線到 ${topic}`);
+      });
+
+      ntfySource.addEventListener('message', (event) => {
+        let payload;
+
+        try {
+          payload = JSON.parse(event.data);
+        } catch (error) {
+          return;
+        }
+
+        if (payload.event !== 'message') {
+          return;
+        }
+
+        const incomingBody = payload.message || '';
+
+        if (shouldIgnoreEcho(incomingBody)) {
+          return;
+        }
+
+        appendRemoteMessage(incomingBody, payload.title || topic, payload.time);
+      });
+
+      ntfySource.addEventListener('keepalive', () => {
+        updateConnectionState('已連線');
+      });
+
+      ntfySource.onerror = () => {
+        updateConnectionState('重連中');
+        updateNtfyStatus('連線中斷，正在自動重試...');
+      };
     }
 
     async function publishToNtfy(title, body) {
@@ -740,6 +836,7 @@
       }
 
       updateNtfyStatus('正在推播到 ntfy.sh...');
+      markEcho(body);
 
       try {
         await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
@@ -827,13 +924,23 @@
       updateNtfyStatus(ntfyTopic.value.trim() ? `已設定 ${ntfyTopic.value.trim()}` : '請先輸入 topic');
     });
 
+    ntfyTopic.addEventListener('change', () => {
+      connectNtfy();
+    });
+
+    ntfyConnectBtn.addEventListener('click', () => {
+      connectNtfy();
+    });
+
     ntfyTestBtn.addEventListener('click', () => {
       publishToNtfy('聊天對話窗測試通知', '這是一則由 5/index.html 發送的測試推播。');
     });
 
     scrollToBottom();
     updateCount();
-    updateNtfyStatus(ntfyTopic.value.trim() ? `已設定 ${ntfyTopic.value.trim()}` : '請先輸入 topic');
+    updateConnectionState('連線中');
+    updateNtfyStatus(ntfyTopic.value.trim() ? `正在連線到 ${ntfyTopic.value.trim()}...` : '請先輸入 topic');
+    connectNtfy();
   </script>
 </body>
 </html>
