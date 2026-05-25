@@ -1,10 +1,8 @@
 // Google Apps Script - Online Notepad
-// Folder ID: d1FwoK1MbbcfgYC7sw3pbF6rZUQgJZcy45
+// Folder ID: 1FwoK1MbbcfgYC7sw3pbF6rZUQgJZcy45
 
-const FOLDER_ID = 'd1FwoK1MbbcfgYC7sw3pbF6rZUQgJZcy45';
+const FOLDER_ID = '1FwoK1MbbcfgYC7sw3pbF6rZUQgJZcy45';
 const FILE_NAME = '記事本.txt';
-let lastSaveTime = null;
-let isSaving = false;
 
 /**
  * 打開Web應用程序的主入口
@@ -378,15 +376,16 @@ function getFileContent() {
     if (files.hasNext()) {
       // 檔案存在，讀取內容
       const file = files.next();
-      return file.getBlob().getDataAsString('utf-8');
+      const content = file.getBlob().getDataAsString('utf-8');
+      return content;
     } else {
       // 檔案不存在，創建新檔案
-      const blob = Utilities.newBlob('', 'text/plain', FILE_NAME);
-      folder.createFileFromBlob(blob);
+      const newFile = folder.createFile(FILE_NAME, '');
       return '';
     }
   } catch (error) {
-    throw new Error('無法讀取檔案: ' + error.message);
+    Logger.log('getFileContent Error: ' + error.toString());
+    throw new Error('無法存取資料夾。請確認Folder ID: ' + error.message);
   }
 }
 
@@ -402,8 +401,7 @@ function saveFileContent(content) {
     if (files.hasNext()) {
       file = files.next();
     } else {
-      const blob = Utilities.newBlob('', 'text/plain', FILE_NAME);
-      file = folder.createFileFromBlob(blob);
+      file = folder.createFile(FILE_NAME, '');
     }
     
     // 更新檔案內容
@@ -415,37 +413,10 @@ function saveFileContent(content) {
       timestamp: new Date().toLocaleString('zh-TW')
     };
   } catch (error) {
+    Logger.log('saveFileContent Error: ' + error.toString());
     return {
       success: false,
       message: '保存失敗: ' + error.message
     };
-  }
-}
-
-/**
- * 刪除所有同名檔案（除了最新的一個）
- * 防止重複檔案
- */
-function cleanupDuplicateFiles() {
-  try {
-    const folder = DriveApp.getFolderById(FOLDER_ID);
-    const files = folder.getFilesByName(FILE_NAME);
-    const fileArray = [];
-    
-    while (files.hasNext()) {
-      fileArray.push(files.next());
-    }
-    
-    if (fileArray.length > 1) {
-      // 按修改時間排序，保留最新的檔案
-      fileArray.sort((a, b) => b.getLastUpdated() - a.getLastUpdated());
-      
-      // 刪除舊檔案
-      for (let i = 1; i < fileArray.length; i++) {
-        fileArray[i].setTrashed(true);
-      }
-    }
-  } catch (error) {
-    Logger.log('清理重複檔案出錯: ' + error.message);
   }
 }
