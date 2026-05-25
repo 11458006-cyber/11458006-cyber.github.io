@@ -381,7 +381,8 @@ function getFileContent() {
       return file.getBlob().getDataAsString('utf-8');
     } else {
       // 檔案不存在，創建新檔案
-      folder.createFile(FILE_NAME, '', MimeType.PLAIN_TEXT);
+      const blob = Utilities.newBlob('', 'text/plain', FILE_NAME);
+      folder.createFileFromBlob(blob);
       return '';
     }
   } catch (error) {
@@ -401,7 +402,8 @@ function saveFileContent(content) {
     if (files.hasNext()) {
       file = files.next();
     } else {
-      file = folder.createFile(FILE_NAME, '', MimeType.PLAIN_TEXT);
+      const blob = Utilities.newBlob('', 'text/plain', FILE_NAME);
+      file = folder.createFileFromBlob(blob);
     }
     
     // 更新檔案內容
