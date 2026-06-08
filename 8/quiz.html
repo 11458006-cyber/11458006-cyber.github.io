@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <title>英文單字測驗（200題）</title>
+  <style>
+    body{font-family:Arial, Helvetica, sans-serif;max-width:800px;margin:20px auto;padding:0 12px}
+    h1{font-size:20px}
+    #question{margin:20px 0;font-size:18px}
+    .option{display:block;margin:8px 0}
+    #controls{margin-top:12px}
+    #progress{margin-top:8px;color:#666}
+    button{padding:8px 12px;margin-right:8px}
+    #result{margin-top:16px;font-weight:bold}
+  </style>
+</head>
+<body>
+  <h1>英文單字測驗（可選擇題數，預設200題）</h1>
+  <p>作者：劉米</p>
+
+  題數：<input id="num" type="number" value="200" min="1" max="200" style="width:80px"> 
+  <button id="start">開始測驗</button>
+  <button id="restart" style="display:none">重新開始</button>
+
+  <div id="quizArea" style="display:none">
+    <div id="progress"></div>
+    <div id="question"></div>
+    <div id="options"></div>
+    <div id="controls">
+      <button id="prev">上一題</button>
+      <button id="next">下一題</button>
+      <button id="submit" style="display:none">交卷</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // 200 字庫：English \t Chinese
+    const PAIRS = `abandon	放棄
+ability	能力
+abroad	國外
+absorb	吸收
+academic	學術的
+accept	接受
+accident	事故
+accompany	陪伴
+achieve	達成
+acquire	獲得
+adapt	適應
+admire	欽佩
+advance	進步
+advantage	優勢
+affect	影響
+afford	負擔得起
+agency	機構
+agriculture	農業
+ambitious	有抱負的
+analysis	分析
+ancient	古代的
+announce	宣布
+anxiety	焦慮
+apparent	明顯的
+approach	方法；接近
+appropriate	適當的
+approve	贊成
+argument	爭論
+arrange	安排
+artificial	人造的
+aspect	方面
+assign	指派
+assist	協助
+assume	假設
+atmosphere	氣氛；大氣
+attract	吸引
+audience	觀眾
+authority	權威
+available	可取得的
+average	平均的
+aware	察覺的
+balance	平衡
+benefit	利益
+biology	生物學
+border	邊界
+brief	簡短的
+budget	預算
+calculate	計算
+campaign	活動；競選
+capable	有能力的
+career	職業
+category	類別
+challenge	挑戰
+chemical	化學的
+circumstance	情況
+citizen	公民
+climate	氣候
+colleague	同事
+combine	結合
+comment	評論
+commercial	商業的
+commit	犯下；投入
+communicate	溝通
+community	社區
+compare	比較
+compete	競爭
+complex	複雜的
+concentrate	專心
+concept	概念
+concern	關心；憂慮
+conclude	結論
+conduct	執行
+confidence	自信
+confirm	確認
+conflict	衝突
+consequence	結果
+conserve	保存
+consider	考慮
+consist	由…組成
+constant	持續的
+construct	建造
+consume	消耗
+contact	聯絡
+contain	包含
+contribute	貢獻
+convenient	方便的
+convince	說服
+cooperate	合作
+create	創造
+culture	文化
+curious	好奇的
+decline	下降；拒絕
+decrease	減少
+define	定義
+delay	延遲
+demand	需求
+demonstrate	證明
+depend	依靠
+describe	描述
+design	設計
+destroy	破壞
+determine	決定
+develop	發展
+device	裝置
+devote	奉獻
+disaster	災難
+discipline	紀律
+discover	發現
+discuss	討論
+disease	疾病
+distribute	分配
+diversity	多樣性
+economy	經濟
+educate	教育
+effective	有效的
+efficient	有效率的
+eliminate	消除
+encourage	鼓勵
+energy	能源
+enormous	巨大的
+environment	環境
+essential	必要的
+establish	建立
+estimate	估計
+evaluate	評估
+evidence	證據
+examine	檢查
+exchange	交換
+exist	存在
+expand	擴展
+expect	期待
+experiment	實驗
+expert	專家
+explore	探索
+express	表達
+factor	因素
+feature	特徵
+fiction	小說
+finance	財務
+flexible	有彈性的
+focus	專注
+frequent	頻繁的
+function	功能
+generation	世代
+generous	慷慨的
+global	全球的
+graduate	畢業
+guarantee	保證
+habit	習慣
+harmful	有害的
+hesitate	猶豫
+identify	識別
+ignore	忽視
+illustrate	說明
+immediate	立即的
+impact	影響
+improve	改善
+include	包含
+increase	增加
+independent	獨立的
+indicate	表示
+individual	個人的
+influence	影響力
+inform	通知
+ingredient	成分
+inspire	啟發
+instance	例子
+interact	互動
+international	國際的
+interpret	解釋
+interview	面試
+involve	涉及
+issue	議題
+journal	期刊；日誌
+knowledge	知識
+laboratory	實驗室
+language	語言
+maintain	維持
+majority	大多數
+manage	管理
+measure	測量
+method	方法
+motivate	激勵
+natural	自然的
+negative	負面的
+observe	觀察
+obtain	獲得
+occur	發生
+opportunity	機會
+participate	參加
+perform	執行；表演
+persuade	說服
+phenomenon	現象
+positive	正面的
+potential	潛力
+practical	實用的
+predict	預測
+prepare	準備
+principle	原則
+process	過程
+produce	生產
+profession	職業
+promote	促進
+protect	保護
+provide	提供`;
+
+    function parsePairs(text){
+      return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(function(line){
+        const p = line.split(/\t+/);
+        return {word: p[0], def: p[1] || ''};
+      });
+    }
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} }
+
+    let questions = [];
+    let answers = [];
+    let current = 0;
+
+    function buildQuestions(n){
+      const pairs = parsePairs(PAIRS);
+      n = Math.min(n, pairs.length);
+      shuffle(pairs);
+      const qs = [];
+      for(let i=0;i<n;i++){
+        const correct = pairs[i];
+        const distractors = [];
+        let idx = i+1;
+        while(distractors.length<3){
+          const cand = pairs[idx % pairs.length];
+          if(cand.def !== correct.def && distractors.indexOf(cand.def)===-1) distractors.push(cand.def);
+          idx++;
+          if(idx - i > pairs.length+10) break;
+        }
+        const opts = [correct.def].concat(distractors).slice(0,4);
+        shuffle(opts);
+        qs.push({word: correct.word, options: opts, correct: opts.indexOf(correct.def)});
+      }
+      return qs;
+    }
+
+    function renderQuestion(i){
+      const q = questions[i];
+      document.getElementById('progress').innerText = '第 ' + (i+1) + ' 題 / 共 ' + questions.length + ' 題';
+      document.getElementById('question').innerText = (i+1) + '. ' + q.word;
+      const opts = document.getElementById('options');
+      opts.innerHTML = '';
+      q.options.forEach(function(opt, j){
+        const id = 'o'+j;
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type='radio'; input.name='opt'+i; input.value=j; input.id=id;
+        if(answers[i]===j) input.checked=true;
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(' ' + opt));
+        opts.appendChild(label);
+      });
+      document.getElementById('prev').disabled = (i===0);
+      document.getElementById('next').style.display = (i===questions.length-1)?'none':'inline-block';
+      document.getElementById('submit').style.display = (i===questions.length-1)?'inline-block':'none';
+    }
+
+    document.getElementById('start').addEventListener('click', function(){
+      const n = parseInt(document.getElementById('num').value,10) || 200;
+      questions = buildQuestions(n);
+      answers = new Array(questions.length).fill(null);
+      current = 0;
+      document.getElementById('quizArea').style.display='block';
+      document.getElementById('start').style.display='none';
+      document.getElementById('restart').style.display='inline-block';
+      renderQuestion(current);
+    });
+
+    document.getElementById('restart').addEventListener('click', function(){
+      location.reload();
+    });
+
+    document.getElementById('next').addEventListener('click', function(){
+      const els = document.getElementsByName('opt'+current);
+      for(let k=0;k<els.length;k++) if(els[k].checked) { answers[current]=parseInt(els[k].value,10); break; }
+      if(current < questions.length-1) current++;
+      renderQuestion(current);
+    });
+
+    document.getElementById('prev').addEventListener('click', function(){
+      const els = document.getElementsByName('opt'+current);
+      for(let k=0;k<els.length;k++) if(els[k].checked) { answers[current]=parseInt(els[k].value,10); break; }
+      if(current>0) current--;
+      renderQuestion(current);
+    });
+
+    document.getElementById('submit').addEventListener('click', function(){
+      const els = document.getElementsByName('opt'+current);
+      for(let k=0;k<els.length;k++) if(els[k].checked) { answers[current]=parseInt(els[k].value,10); break; }
+      let score=0; let answered=0;
+      for(let i=0;i<questions.length;i++){
+        if(answers[i]!==null){ answered++; if(answers[i]===questions[i].correct) score++; }
+      }
+      const percent = (score / questions.length) * 100;
+      const percentRounded = Math.round(percent * 100) / 100; // two decimals
+      const scaledScore = percentRounded; // 滿分 100
+      document.getElementById('result').innerText = '得分：' + scaledScore + ' / 100（正確 ' + score + ' / ' + questions.length + '，答題數：' + answered + '）';
+      window.scrollTo(0,0);
+    });
+  </script>
+  <footer style="margin-top:24px;color:#666;font-size:14px">作者：劉米</footer>
+</body>
+</html>
